@@ -30,7 +30,7 @@ def player(board):
                 x_count += 1
             elif column == O:
                 o_count += 1
-    
+
     # If there are more X than O then it's O's chance else it's X's chance.
     if x_count > o_count:
         return O
@@ -53,16 +53,21 @@ def result(board, action):
     """
     Returns the board that results from making move (i, j) on the board.
     """
-    new_board = [row[:] for row in board]  # Create a copy of the board
+    # Create a copy of the board to avoid modifying the original
+    new_board = [row[:] for row in board]
 
-    if action is None:
-        return new_board
-    
-    # Apply the player's move to the new board
+    # If the action is invalid (out of bounds), return the original board (or raise an error)
+    if action[0] < 0 or action[0] > 2 or action[1] < 0 or action[1] > 2:
+        raise ValueError("Action out of bounds")
+
+    # If the cell is already filled, return the original board (this check might be redundant)
+    if new_board[action[0]][action[1]] != EMPTY:
+        raise ValueError("Invalid move")
+
+    # Apply the current player's move to the new board
     new_board[action[0]][action[1]] = player(board)
-    
-    return new_board
 
+    return new_board
 
 def winner(board):
     """
@@ -92,9 +97,9 @@ def terminal(board):
     """
     Returns True if game is over, False otherwise.
     """
-    if winner(board) is not None:  # Check if there is a winner
+    if winner(board) == X or winner(board) == O:  # Check if there is a winner
         return True
-    
+
     for row in board:  # Check if the board is full (no empty spaces)
         if EMPTY in row:
             return False
@@ -114,7 +119,7 @@ def utility(board):
 def minValue(board):
     if terminal(board):
         return utility(board)
-    value = float('inf') 
+    value = float('inf')
     for action in actions(board):
         value = min(value, maxValue(result(board, action)))
     return value
@@ -123,7 +128,7 @@ def maxValue(board):
     if terminal(board):
         return utility(board)
 
-    value = float('-inf') 
+    value = float('-inf')
     # Checking all the outcome value of each action and setting minimum as value
     for action in actions(board):
         value = max(value, minValue(result(board, action)))
@@ -133,10 +138,14 @@ def maxValue(board):
 def minimax(board):
     """
     Returns the optimal action for the current player on the board.
-    Let's say player is X, X will want to take action with max output value. 
+    Let's say player is X, X will want to take action with max output value.
     We'll take the max value of all the minimum values that O's next turn can output since O will try to minimize the output value in it's turn.
     We'll keep going down and down until the game is finished.
     """
+    # If the game is over, return None immediately
+    if terminal(board):
+        return None  # No action to take if the game is over
+    
     # Ensure there are valid actions
     possible_actions = actions(board)
     if not possible_actions:
