@@ -92,42 +92,54 @@ def shortest_path(source, target):
     If no possible path, returns None.
     """
 
-    # TODO
+    # If source is the same as target, return an empty path (no need to search)
+    if source == target:
+        return []
+
+    # Initialize the frontier with the source node
     frontier = QueueFrontier()
-    start = Node(source, None, None)
+    start = Node(state=source, parent=None, action=None)  # Initial state, no parent, no action
     frontier.add(start)
 
+    # Set to keep track of explored nodes (person ids)
     explored = set()
 
     while True:
-        # Checking if we have any node in frontier or not.
+        # If the frontier is empty, no path exists
         if frontier.empty():
             return None
 
-        # Now we are on the node we'll add it to explored node, will get all it's neighbors and check if contains our target if not add them to frontier.
-        star_node = frontier.remove()
-        explored.add(star_node)
-        # neighbor contains set of movie id and person id of person stared
-        movie_costar = neighbors_for_person() 
+        # Remove the next node from the frontier
+        current_node = frontier.remove()
+
+        # Add the current node's state to the explored set
+        explored.add(current_node.state)
+        print(f'Current Star: {current_node.state}')  # Debugging print statement
+
+        # Get all the neighbors (movie_id, person_id) for this person
+        neighbors = neighbors_for_person(current_node.state)
 
         for movie, costar in neighbors:
-            # movie is action and costar is state here.
+            # If the costar is the target, we've found the path
             if costar == target:
-                # We got the target node and now we'll backtrack and map the path
+                print('Star found!')  # Debugging print statement
+                # Backtrack to get the full path
                 path = []
-                while node.parent is not None:
-                    path.insert(0, (movie, costar))
+                # Include the last movie-costar pair that leads to the target first
+                path.insert(0, (movie, costar))  # This adds the final step
+                # Backtrack to get the full path
+                while current_node.parent is not None:
+                    path.insert(0, (current_node.action, current_node.state))  # Add (movie, person) to the path
+                    current_node = current_node.parent
+
                 return path
 
-            # this means costar neither has been explored nor it is in frontier.
-            if not frontier.contains_state(costar) and costar Not in explored:
-                # If so then our costar is a fresh node and we'll add it to frontier with it's parent being node from previous star.
-                costar_node = Node(state=costar, parent=star)
-                frontier.add_node(costar_node)
+            # If the costar has neither been explored nor is in the frontier, add it
+            if costar not in explored and not frontier.contains_state(costar):
+                # Add the costar node to the frontier
+                child_node = Node(state=costar, parent=current_node, action=movie)
+                frontier.add(child_node)
 
-
-    
-    raise NotImplementedError
 
 
 def person_id_for_name(name):
