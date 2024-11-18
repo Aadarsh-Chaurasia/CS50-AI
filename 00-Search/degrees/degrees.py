@@ -93,6 +93,40 @@ def shortest_path(source, target):
     """
 
     # TODO
+    frontier = QueueFrontier()
+    start = Node(source, None, None)
+    frontier.add(start)
+
+    explored = set()
+
+    while True:
+        # Checking if we have any node in frontier or not.
+        if frontier.empty():
+            return None
+
+        # Now we are on the node we'll add it to explored node, will get all it's neighbors and check if contains our target if not add them to frontier.
+        star_node = frontier.remove()
+        explored.add(star_node)
+        # neighbor contains set of movie id and person id of person stared
+        movie_costar = neighbors_for_person() 
+
+        for movie, costar in neighbors:
+            # movie is action and costar is state here.
+            if costar == target:
+                # We got the target node and now we'll backtrack and map the path
+                path = []
+                while node.parent is not None:
+                    path.insert(0, (movie, costar))
+                return path
+
+            # this means costar neither has been explored nor it is in frontier.
+            if not frontier.contains_state(costar) and costar Not in explored:
+                # If so then our costar is a fresh node and we'll add it to frontier with it's parent being node from previous star.
+                costar_node = Node(state=costar, parent=star)
+                frontier.add_node(costar_node)
+
+
+    
     raise NotImplementedError
 
 
